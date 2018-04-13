@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings, TypeOperators #-}
 
 module Hedger.Migration
-    (
-      migrate
+    ( migrate
       , dBPath
       , CategoriesSchema
       , ExpensesSchema
       , categories
+      , withDB
     ) where
 
 import Data.Foldable (forM_)
@@ -25,6 +25,7 @@ import Database.Selda
   , autoPrimary
   , required
   , fk
+  , SeldaM
   )
 import Database.Selda.SQLite (withSQLite)
 import System.Directory
@@ -48,13 +49,19 @@ dBPath = do
     dir <- dBDir
     return $ dir </> "hedger.sqlite"
 
+withDB :: SeldaM a -> IO a
+withDB act = do
+  path <- dBPath
+  withSQLite path act
+
 migrate :: IO ()
 migrate = do
     dir <- dBDir
     createDirectoryIfMissing True dir
-    path <- dBPath
-    forM_ (categories, expenses)
-      $ withSQLite path . tryCreateTable
+    -- forM_ (categories, expenses)
+    --    $ withDB . createTable
+    withDB . tryCreateTable $ categories
+    withDB . tryCreateTable $ expenses
 
 categories:: Table (CategoriesSchema)
 (categories, categoryID :*: rest) = tableWithSelectors "categories" 
