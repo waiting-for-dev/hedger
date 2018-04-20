@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TypeOperators #-}
+{-# LANGUAGE OverloadedStrings, TypeOperators, ExistentialQuantification, LambdaCase #-}
 
 module Hedger.Migration
     ( migrate
@@ -38,6 +38,8 @@ import System.Directory
 type CategoriesSchema = RowID:*:Text
 type ExpensesSchema = RowID:*:Text:*:Double:*:RowID
 
+data ExTable = forall a. ExTable (Table a)
+
 dBDir :: IO FilePath
 dBDir = getXdgDirectory XdgData "hedger"
 
@@ -58,10 +60,8 @@ migrate :: IO ()
 migrate = do
     dir <- dBDir
     createDirectoryIfMissing True dir
-    -- forM_ (categories, expenses)
-    --    $ withDB . createTable
-    withDB . tryCreateTable $ categories
-    withDB . tryCreateTable $ expenses
+    forM_ (ExTable categories, ExTable expenses)
+      $ \case ExTable t -> withDB ( tryCreateTable t )
 
 categories:: Table (CategoriesSchema)
 (categories, categoryID :*: rest) = tableWithSelectors "categories" 
