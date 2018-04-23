@@ -4,30 +4,29 @@ module Hedger.Category
   (
     listCategories
     , addCategory
+    , list
   ) where
 
 import Database.Selda
   (
     SeldaM(..)
-    , query
-    , select
     , insert_
     , (:*:)(..)
     , def
     , Text
-    , liftIO
   )
+
+import Hedger.Backend (list)
 
 import Hedger.Migration
   (
-    withDB
-  , CategoriesSchema
+  CategoriesSchema
   , categories
+  , withDB
   )
 
 listCategories :: IO [CategoriesSchema]
-listCategories = withDB $ query
-                   $ select categories
+listCategories = list categories
 
 addCategory :: Text -> IO ()
 addCategory name = withDB $ insert_ categories 

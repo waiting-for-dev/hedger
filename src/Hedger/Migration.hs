@@ -6,6 +6,7 @@ module Hedger.Migration
       , CategoriesSchema
       , ExpensesSchema
       , categories
+      , expenses
       , withDB
     ) where
 
